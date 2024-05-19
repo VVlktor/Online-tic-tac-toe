@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic tac toe</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDZyoC-z8QaD5zaNQCo6h_16q7prBFpqF4",
+            authDomain: "test-project-wiktor.firebaseapp.com",
+            databaseURL: "https://test-project-wiktor-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "test-project-wiktor",
+            storageBucket: "test-project-wiktor.appspot.com",
+            messagingSenderId: "1023581352441",
+            appId: "1:1023581352441:web:85672eb52848bc48734d28",
+            measurementId: "G-CC08PXCR5C"
+        };
+            
+    
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(); 
+
+       
+    </script>
+      
+</head>
+<body>
+    
+    <div style="border: 1px solid black; padding: 10px; margin: 10px;">
+        <button id="generateCodeButton">Zacznij gre</button>
+    </div>
+
+</body>
+</html>
