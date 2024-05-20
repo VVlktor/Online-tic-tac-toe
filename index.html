@@ -19,21 +19,95 @@
             messagingSenderId: "1023581352441",
             appId: "1:1023581352441:web:85672eb52848bc48734d28",
             measurementId: "G-CC08PXCR5C"
-        };
-            
+        };//Podobno przechowywanie tego tutaj jest bezpieczne. Podobno.
+                        
     
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(); 
 
-       
+        
+        //stuff od logowanie itp
+        const logIn = async() => {
+            const login=document.getElementById("userEmail").value;
+            const password = document.getElementById("userPassword").value;
+            try{
+                const userCredential = await signInWithEmailAndPassword(auth, login, password)
+                console.log(userCredential.user);
+                dej();
+            }catch(error){
+                console.log(error.code);
+            }
+            
+        }
+
+        const signUp = async() => {
+            const login = document.getElementById("userEmail").value;
+            const password = document.getElementById("userPassword").value;
+            try{
+                const userCredential = await createUserWithEmailAndPassword(auth, login, password)
+                console.log(userCredential.user);
+                dej();
+            }catch(error){
+                console.log(error.code);
+            } 
+        }
+
+        var isLogged = false;
+
+        const monitorAuth = async() => {
+            onAuthStateChanged(auth, user=>{
+                if(user){
+                    isLogged=true;
+                    console.log("zalogowany");
+                }else{
+                    isLogged=false;
+                    console.log("nie zalogowany");
+                }
+            });
+        }
+
+        const logOut = async() => {
+            await signOut(auth);
+        }
+
+        monitorAuth();
+
+        
+
+
+        document.getElementById("signInUser").addEventListener("click", logIn);
+        document.getElementById("signUpUser").addEventListener("click", signUp);
+        document.getElementById("logOutUser").addEventListener("click",logOut);
+
+
+
     </script>
       
 </head>
 <body>
-    
-    <div style="border: 1px solid black; padding: 10px; margin: 10px;">
+
+    <div style="display: inline-flex; width:100%">
+        <div style="justify-content: space-between; display: flex; border: 1px solid black; padding: 20px; width: 100%;">
+            <div>
+                <label for="userEmail">Email:</label>
+                <input type="text" id="userEmail">
+            </div>
+            <div>
+                <label for="userPassword">Haslo:</label>
+                <input type="text" id="userPassword">
+            </div>
+            <button id="signUpUser">Zarejestruj się</button>
+            <button id="signInUser">Zaloguj się</button>
+            <button id="logOutUser">wyloguj</button>
+        </div>
+    </div>
+    <div style=" border: 1px solid black; padding: 10px; margin: 10px;">
         <button id="generateCodeButton">Zacznij gre</button>
+        <button id="joinGameButton">Dolacz do gry</button>
+        <label for="JoinGameInput">Kod gry:</label>
+        <input type="text" id="JoinGameInput">
+        <p id="loginFirstThenPlay" style="display:none;">Zaloguj sie lub zarejestruj!</p>
     </div>
 
 </body>
