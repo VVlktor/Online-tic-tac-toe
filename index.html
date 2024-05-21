@@ -8,7 +8,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js'
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, set, get, child, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDZyoC-z8QaD5zaNQCo6h_16q7prBFpqF4",
@@ -21,13 +21,12 @@
             measurementId: "G-CC08PXCR5C"
         };//Podobno przechowywanie tego tutaj jest bezpieczne. Podobno.
                         
-    
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(); 
 
+        var isLogged = false;
         
-        //stuff od logowanie itp
         const logIn = async() => {
             const login=document.getElementById("userEmail").value;
             const password = document.getElementById("userPassword").value;
@@ -47,13 +46,10 @@
             try{
                 const userCredential = await createUserWithEmailAndPassword(auth, login, password)
                 console.log(userCredential.user);
-                dej();
             }catch(error){
                 console.log(error.code);
             } 
         }
-
-        var isLogged = false;
 
         const monitorAuth = async() => {
             onAuthStateChanged(auth, user=>{
@@ -71,21 +67,51 @@
             await signOut(auth);
         }
 
-        monitorAuth();
+        const joinGame = async() => {
+            if(!isLogged){
+                document.getElementById("errorJoining").style.display="inline";
+                document.getElementById("errorJoining").textContent="Zaloguj sie lub zarejestruj!";
+                return;
+            }
+            var gameCode = document.getElementById("JoinGameInput").value;
+            const dbRef = ref(getDatabase(app));
+            get(child(dbRef, 'games/' + gameCode)).then((snapshot)=>{
+                if(snapshot.exists() || snapshot.val().fields != undefined){
+                    document.getElementById("errorJoining").style.display="none";
+                    document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
+                    console.log(snapshot.val().fields);
+                    watchGame(gameCode);
+                }
+                else{
+                    document.getElementById("errorJoining").style.display="inline";
+                    document.getElementById("errorJoining").textContent="Błędny kod gry!";
+                }
+            });
+        }
 
+        function watchGame(gameCode){
+            document.getElementById("joinGameButton").disabled=true;
+            document.getElementById("generateCodeButton").disabled=true;
+            const db = getDatabase(app);
+            const distanceRef = ref(db, 'games/' + gameCode);
+            onValue(distanceRef, (snapshot) => {
+                //ChangeGameState(snapshot.val().fields); dodac logike do zmiany pol na planszy
+                document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
+
+            });
+        }
         
-
-
+        monitorAuth();
         document.getElementById("signInUser").addEventListener("click", logIn);
         document.getElementById("signUpUser").addEventListener("click", signUp);
         document.getElementById("logOutUser").addEventListener("click",logOut);
-
-
-
+        document.getElementById("joinGameButton").addEventListener("click",joinGame)
     </script>
       
 </head>
 <body>
+    <p id="testDaneZBazy"></p>
+
 
     <div style="display: inline-flex; width:100%">
         <div style="justify-content: space-between; display: flex; border: 1px solid black; padding: 20px; width: 100%;">
@@ -102,12 +128,12 @@
             <button id="logOutUser">wyloguj</button>
         </div>
     </div>
-    <div style=" border: 1px solid black; padding: 10px; margin: 10px;">
+    <div style=" border: 1px solid black; padding: 10px; margin-top: 10px;">
         <button id="generateCodeButton">Zacznij gre</button>
         <button id="joinGameButton">Dolacz do gry</button>
         <label for="JoinGameInput">Kod gry:</label>
         <input type="text" id="JoinGameInput">
-        <p id="loginFirstThenPlay" style="display:none;">Zaloguj sie lub zarejestruj!</p>
+        <p id="errorJoining" style="display:none;">Error!</p>
     </div>
 
 </body>
