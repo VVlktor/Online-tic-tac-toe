@@ -33,7 +33,6 @@
             try{
                 const userCredential = await signInWithEmailAndPassword(auth, login, password)
                 console.log(userCredential.user);
-                dej();
             }catch(error){
                 console.log(error.code);
             }
@@ -67,24 +66,47 @@
             await signOut(auth);
         }
 
+        function ShowError(errorMessage){
+            document.getElementById("errorJoining").style.display="inline";
+            document.getElementById("errorJoining").textContent=errorMessage;
+        }
+
+        const generateCode = async() => {
+            if(!isLogged){
+                ShowError("Zaloguj sie lub zarejestruj!");
+                return;
+            }
+            var generatedCode="";
+            const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            for (let i = 0; i < 6; i++) {
+                generatedCode += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            const database = getDatabase(app);
+            const reference = ref(database, 'games/' + generatedCode);
+            set(reference, {
+                fields: "000000000"
+            });
+            document.getElementById("wygenerowanyCode").textContent="Twoj kod gry: " + generatedCode;
+            document.getElementById("joiningMenu").style.display="none";
+            watchGame(generatedCode);
+        }
+
         const joinGame = async() => {
             if(!isLogged){
-                document.getElementById("errorJoining").style.display="inline";
-                document.getElementById("errorJoining").textContent="Zaloguj sie lub zarejestruj!";
+                ShowError("Zaloguj sie lub zarejestruj!");
                 return;
             }
             var gameCode = document.getElementById("JoinGameInput").value;
             const dbRef = ref(getDatabase(app));
             get(child(dbRef, 'games/' + gameCode)).then((snapshot)=>{
-                if(snapshot.exists() || snapshot.val().fields != undefined){
-                    document.getElementById("errorJoining").style.display="none";
+                if(snapshot.exists() && snapshot.val().fields != undefined){
+                    document.getElementById("joiningMenu").style.display="none";
                     document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
                     console.log(snapshot.val().fields);
                     watchGame(gameCode);
                 }
                 else{
-                    document.getElementById("errorJoining").style.display="inline";
-                    document.getElementById("errorJoining").textContent="Błędny kod gry!";
+                    ShowError("Błędny kod gry!");
                 }
             });
         }
@@ -105,14 +127,12 @@
         document.getElementById("signInUser").addEventListener("click", logIn);
         document.getElementById("signUpUser").addEventListener("click", signUp);
         document.getElementById("logOutUser").addEventListener("click",logOut);
+        document.getElementById("generateCodeButton").addEventListener("click",generateCode);
         document.getElementById("joinGameButton").addEventListener("click",joinGame)
     </script>
       
 </head>
 <body>
-    <p id="testDaneZBazy"></p>
-
-
     <div style="display: inline-flex; width:100%">
         <div style="justify-content: space-between; display: flex; border: 1px solid black; padding: 20px; width: 100%;">
             <div>
@@ -128,13 +148,15 @@
             <button id="logOutUser">wyloguj</button>
         </div>
     </div>
-    <div style=" border: 1px solid black; padding: 10px; margin-top: 10px;">
+    <div id="joiningMenu" style=" border: 1px solid black; padding: 10px; margin-top: 10px;">
         <button id="generateCodeButton">Zacznij gre</button>
         <button id="joinGameButton">Dolacz do gry</button>
         <label for="JoinGameInput">Kod gry:</label>
         <input type="text" id="JoinGameInput">
         <p id="errorJoining" style="display:none;">Error!</p>
     </div>
+    <div style="font-size: 20px; margin-top: 20px;" id="wygenerowanyCode"></div>
 
+    <p id="testDaneZBazy"></p>
 </body>
 </html>
