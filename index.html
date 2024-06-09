@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic tac toe</title>
+    <style>
+        td {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            border: 1px solid black;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
@@ -26,7 +34,9 @@
         const auth = getAuth(); 
 
         var isLogged = false;
-        
+        var myChar="";
+        var isItMyTurn=false;
+        var GameFields="000000000";
         const logIn = async() => {
             const login=document.getElementById("userEmail").value;
             const password = document.getElementById("userPassword").value;
@@ -88,6 +98,8 @@
             });
             document.getElementById("wygenerowanyCode").textContent="Twoj kod gry: " + generatedCode;
             document.getElementById("joiningMenu").style.display="none";
+            myChar="X";
+            isItMyTurn=true;
             watchGame(generatedCode);
         }
 
@@ -103,6 +115,8 @@
                     document.getElementById("joiningMenu").style.display="none";
                     document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
                     console.log(snapshot.val().fields);
+                    myChar="O";
+                    isItMyTurn=false;
                     watchGame(gameCode);
                 }
                 else{
@@ -116,11 +130,47 @@
             document.getElementById("generateCodeButton").disabled=true;
             const db = getDatabase(app);
             const distanceRef = ref(db, 'games/' + gameCode);
+            AddEventListeners();
             onValue(distanceRef, (snapshot) => {
-                //ChangeGameState(snapshot.val().fields); dodac logike do zmiany pol na planszy
-                document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
-
+                document.getElementById("testDaneZBazy").textContent=snapshot.val().fields[0];
+                isItMyTurn=true;//trzeba sprawdzic czy nie zmieni od razu
+                GameFields=snapshot.val().fields;
+                UpdateFields();
             });
+        }
+
+        const HandleGameClick = (whichField) =>{
+            if(isItMyTurn && document.getElementById(whichField).textContent===""){
+                document.getElementById(whichField).textContent=myChar;
+                var newBoard="";
+                for(let i =0; i<9; i++){
+                    if(i==whichField){
+                        newBoard+=myChar
+                    }else{
+                        newBoard+=GameFields[i];
+                    }
+                }
+                GameFields=newBoard;
+                isItMyTurn=false;
+                console.log(GameFields);
+                //UpdateDatabase();
+            }
+        }
+
+        function AddEventListeners(){
+            const pola = document.querySelectorAll('.GameBoard td');
+            for (let i = 0; i < pola.length; i++) {
+                pola[i].addEventListener("click",() => HandleGameClick(pola[i].id));
+            }
+        }
+        
+        function UpdateFields(){
+            const pola = document.querySelectorAll('.GameBoard td');
+            for (let i = 0; i < pola.length; i++) {
+                if(GameFields[i]!='0'){
+                    pola[i].textContent=GameFields[i];
+                }
+            }
         }
         
         monitorAuth();
@@ -158,5 +208,25 @@
     <div style="font-size: 20px; margin-top: 20px;" id="wygenerowanyCode"></div>
 
     <p id="testDaneZBazy"></p>
+
+    <div class="GameBoard">
+        <table>
+            <tr>
+                <td id="0"></td>
+                <td id="1"></td>
+                <td id="2"></td>
+            </tr>
+            <tr>
+                <td id="3"></td>
+                <td id="4"></td>
+                <td id="5"></td>
+            </tr>
+            <tr>
+                <td id="6"></td>
+                <td id="7"></td>
+                <td id="8"></td>
+            </tr>
+        </table>
+    </div>
 </body>
 </html>
