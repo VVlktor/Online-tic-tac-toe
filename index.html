@@ -33,16 +33,19 @@
         const analytics = getAnalytics(app);
         const auth = getAuth(); 
 
+        var CodeOfGame = "";
         var isLogged = false;
         var myChar="";
         var isItMyTurn=false;
         var GameFields="000000000";
+        var gameEnded=false;
+
         const logIn = async() => {
             const login=document.getElementById("userEmail").value;
             const password = document.getElementById("userPassword").value;
             try{
                 const userCredential = await signInWithEmailAndPassword(auth, login, password)
-                console.log(userCredential.user);
+                //console.log(userCredential.user);
             }catch(error){
                 console.log(error.code);
             }
@@ -54,7 +57,6 @@
             const password = document.getElementById("userPassword").value;
             try{
                 const userCredential = await createUserWithEmailAndPassword(auth, login, password)
-                console.log(userCredential.user);
             }catch(error){
                 console.log(error.code);
             } 
@@ -62,13 +64,10 @@
 
         const monitorAuth = async() => {
             onAuthStateChanged(auth, user=>{
-                if(user){
+                if(user)
                     isLogged=true;
-                    console.log("zalogowany");
-                }else{
+                else
                     isLogged=false;
-                    console.log("nie zalogowany");
-                }
             });
         }
 
@@ -98,6 +97,7 @@
             });
             document.getElementById("wygenerowanyCode").textContent="Twoj kod gry: " + generatedCode;
             document.getElementById("joiningMenu").style.display="none";
+            document.getElementById("czyjRuch").textContent="Twój ruch!";
             myChar="X";
             isItMyTurn=true;
             watchGame(generatedCode);
@@ -113,10 +113,10 @@
             get(child(dbRef, 'games/' + gameCode)).then((snapshot)=>{
                 if(snapshot.exists() && snapshot.val().fields != undefined){
                     document.getElementById("joiningMenu").style.display="none";
-                    document.getElementById("testDaneZBazy").textContent=snapshot.val().fields;
                     console.log(snapshot.val().fields);
                     myChar="O";
                     isItMyTurn=false;
+                    document.getElementById("czyjRuch").textContent="Ruch przeciwnika!";
                     watchGame(gameCode);
                 }
                 else{
@@ -125,35 +125,70 @@
             });
         }
 
+        function CheckWin(fieldsToCheck){
+            for (let i = 0; i < 3; i++) {
+                if (fieldsToCheck[i] === fieldsToCheck[i+3] && fieldsToCheck[i] === fieldsToCheck[i + 6])
+                    return fieldsToCheck[i];
+            }
+            for (let i = 0; i < 3; i++) {
+                if (fieldsToCheck[i * 3] === fieldsToCheck[1 + i * 3] && fieldsToCheck[0 + i * 3] === fieldsToCheck[2 + i * 3])
+                    return fieldsToCheck[i * 3];
+            }
+            if (fieldsToCheck[0] === fieldsToCheck[4] && fieldsToCheck[0] === fieldsToCheck[8])
+                return fieldsToCheck[0];
+            if (fieldsToCheck[2] === fieldsToCheck[4] && fieldsToCheck[2] === fieldsToCheck[6])
+                return fieldsToCheck[2];
+            return '0';
+        }
+
         function watchGame(gameCode){
             document.getElementById("joinGameButton").disabled=true;
             document.getElementById("generateCodeButton").disabled=true;
             const db = getDatabase(app);
+            CodeOfGame=gameCode;
             const distanceRef = ref(db, 'games/' + gameCode);
             AddEventListeners();
             onValue(distanceRef, (snapshot) => {
-                document.getElementById("testDaneZBazy").textContent=snapshot.val().fields[0];
-                isItMyTurn=true;//trzeba sprawdzic czy nie zmieni od razu
+                if(gameEnded)
+                    return;
+                var whoWon=CheckWin(snapshot.val().fields);
+                console.log(whoWon);
+                if(whoWon=='X' || whoWon=='O'){
+                    gameEnded=true;
+                    document.getElementById("czyjRuch").textContent="Wygrywa " + whoWon;
+                }
+                else if(GameFields!=snapshot.val().fields){
+                    isItMyTurn=true;
+                    document.getElementById("czyjRuch").textContent="Twój ruch!";
+                }
                 GameFields=snapshot.val().fields;
                 UpdateFields();
             });
         }
 
+        function UpdateDatabase(){
+            const database = getDatabase(app);
+            const reference = ref(database, 'games/' + CodeOfGame);
+            set(reference, {
+                fields:GameFields
+            });
+        }
+        
         const HandleGameClick = (whichField) =>{
-            if(isItMyTurn && document.getElementById(whichField).textContent===""){
+            if(isItMyTurn && document.getElementById(whichField).textContent==="" && !gameEnded){
                 document.getElementById(whichField).textContent=myChar;
                 var newBoard="";
+                document.getElementById("czyjRuch").textContent="Ruch przeciwnika!";
                 for(let i =0; i<9; i++){
-                    if(i==whichField){
-                        newBoard+=myChar
-                    }else{
+                    if(i==whichField)
+                        newBoard+=myChar;
+                    else
                         newBoard+=GameFields[i];
-                    }
                 }
                 GameFields=newBoard;
                 isItMyTurn=false;
                 console.log(GameFields);
-                //UpdateDatabase();
+                UpdateDatabase();
             }
         }
 
@@ -167,9 +202,8 @@
         function UpdateFields(){
             const pola = document.querySelectorAll('.GameBoard td');
             for (let i = 0; i < pola.length; i++) {
-                if(GameFields[i]!='0'){
+                if(GameFields[i]!='0')
                     pola[i].textContent=GameFields[i];
-                }
             }
         }
         
@@ -208,6 +242,8 @@
     <div style="font-size: 20px; margin-top: 20px;" id="wygenerowanyCode"></div>
 
     <p id="testDaneZBazy"></p>
+
+    <p id="czyjRuch"></p>
 
     <div class="GameBoard">
         <table>
