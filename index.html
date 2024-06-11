@@ -4,14 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic tac toe</title>
-    <style>
-        td {
-            width: 100px;
-            height: 100px;
-            text-align: center;
-            border: 1px solid black;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
@@ -85,22 +78,17 @@
                 ShowError("Zaloguj sie lub zarejestruj!");
                 return;
             }
-            var generatedCode="";
-            const charset = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            const charset='abcdefghijklmnopqrstuvwxyz0123456789';
             for (let i = 0; i < 6; i++) {
-                generatedCode += charset.charAt(Math.floor(Math.random() * charset.length));
+                CodeOfGame += charset.charAt(Math.floor(Math.random() * charset.length));
             }
-            const database = getDatabase(app);
-            const reference = ref(database, 'games/' + generatedCode);
-            set(reference, {
-                fields: "000000000"
-            });
-            document.getElementById("wygenerowanyCode").textContent="Twoj kod gry: " + generatedCode;
+            UpdateDatabase();
+            document.getElementById("wygenerowanyCode").textContent="Twoj kod gry: " + CodeOfGame;
             document.getElementById("joiningMenu").style.display="none";
             document.getElementById("czyjRuch").textContent="Twój ruch!";
             myChar="X";
             isItMyTurn=true;
-            watchGame(generatedCode);
+            watchGame();
         }
 
         const joinGame = async() => {
@@ -108,16 +96,15 @@
                 ShowError("Zaloguj sie lub zarejestruj!");
                 return;
             }
-            var gameCode = document.getElementById("JoinGameInput").value;
+            CodeOfGame = document.getElementById("JoinGameInput").value;
             const dbRef = ref(getDatabase(app));
-            get(child(dbRef, 'games/' + gameCode)).then((snapshot)=>{
+            get(child(dbRef, 'games/' + CodeOfGame)).then((snapshot)=>{
                 if(snapshot.exists() && snapshot.val().fields != undefined){
                     document.getElementById("joiningMenu").style.display="none";
-                    console.log(snapshot.val().fields);
                     myChar="O";
                     isItMyTurn=false;
                     document.getElementById("czyjRuch").textContent="Ruch przeciwnika!";
-                    watchGame(gameCode);
+                    watchGame();
                 }
                 else{
                     ShowError("Błędny kod gry!");
@@ -141,18 +128,14 @@
             return '0';
         }
 
-        function watchGame(gameCode){
-            document.getElementById("joinGameButton").disabled=true;
-            document.getElementById("generateCodeButton").disabled=true;
+        function watchGame(){
             const db = getDatabase(app);
-            CodeOfGame=gameCode;
-            const distanceRef = ref(db, 'games/' + gameCode);
+            const distanceRef = ref(db, 'games/' + CodeOfGame);
             AddEventListeners();
             onValue(distanceRef, (snapshot) => {
                 if(gameEnded)
                     return;
                 var whoWon=CheckWin(snapshot.val().fields);
-                console.log(whoWon);
                 if(whoWon=='X' || whoWon=='O'){
                     gameEnded=true;
                     document.getElementById("czyjRuch").textContent="Wygrywa " + whoWon;
@@ -177,8 +160,8 @@
         const HandleGameClick = (whichField) =>{
             if(isItMyTurn && document.getElementById(whichField).textContent==="" && !gameEnded){
                 document.getElementById(whichField).textContent=myChar;
-                var newBoard="";
                 document.getElementById("czyjRuch").textContent="Ruch przeciwnika!";
+                var newBoard="";
                 for(let i =0; i<9; i++){
                     if(i==whichField)
                         newBoard+=myChar;
@@ -187,7 +170,6 @@
                 }
                 GameFields=newBoard;
                 isItMyTurn=false;
-                console.log(GameFields);
                 UpdateDatabase();
             }
         }
@@ -217,8 +199,8 @@
       
 </head>
 <body>
-    <div style="display: inline-flex; width:100%">
-        <div style="justify-content: space-between; display: flex; border: 1px solid black; padding: 20px; width: 100%;">
+    <div id="loginFormWrapper">
+        <div id="loginForm">
             <div>
                 <label for="userEmail">Email:</label>
                 <input type="text" id="userEmail">
@@ -232,16 +214,16 @@
             <button id="logOutUser">wyloguj</button>
         </div>
     </div>
-    <div id="joiningMenu" style=" border: 1px solid black; padding: 10px; margin-top: 10px;">
-        <button id="generateCodeButton">Zacznij gre</button>
-        <button id="joinGameButton">Dolacz do gry</button>
+    <div id="joiningMenu">
+        <div id="joiningMenuButtons">
+            <button id="generateCodeButton">Zacznij gre</button>
+            <button id="joinGameButton">Dolacz do gry</button>
+        </div>
         <label for="JoinGameInput">Kod gry:</label>
-        <input type="text" id="JoinGameInput">
+        <input type="text" id="JoinGameInput"><br>
         <p id="errorJoining" style="display:none;">Error!</p>
     </div>
-    <div style="font-size: 20px; margin-top: 20px;" id="wygenerowanyCode"></div>
-
-    <p id="testDaneZBazy"></p>
+    <div id="wygenerowanyCode"></div>
 
     <p id="czyjRuch"></p>
 

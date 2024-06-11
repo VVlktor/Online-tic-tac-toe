@@ -1,0 +1,75 @@
+td {
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    border: 1px solid black;
+    font-size: 24px;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input{
+    width:100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+#loginFormWrapper{
+    display: inline-flex; 
+    width:100%;
+}
+
+#JoinGameInput{
+    width:90%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px;
+    width:15%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+
+#joiningMenuButtons{
+    display:flex;
+}
+
+#joiningMenu  button {
+    padding: 10px;
+    width:50%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+
+#loginForm{
+    justify-content: space-between; 
+    display: flex; 
+    border: 1px solid black; 
+    padding: 20px; 
+    width: 100%;
+    border-radius: 5px;
+}
