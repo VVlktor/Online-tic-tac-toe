@@ -73,3 +73,47 @@ button {
     width: 100%;
     border-radius: 5px;
 }
+
+
+button:hover {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+#joiningMenu {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 5px;
+    background-color: #fff;
+    border: 1px solid black;
+}
+
+.GameBoard td {
+    width: 120px;
+    height: 120px;
+    text-align: center;
+    border: 2px solid #ddd;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.GameBoard td:hover {
+    background-color: #f9f9f9;
+}
+
+#wygenerowanyCode {
+    font-size: 18px;
+    margin-top: 20px;
+    text-align: center;
+}
+
+#errorJoining {
+    color: red;
+    margin-top: 10px;
+}
+
+
+#czyjRuch, #wygenerowanyCode{
+    font-size: 28px;
+}
